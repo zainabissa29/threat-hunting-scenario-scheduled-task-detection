@@ -1,9 +1,8 @@
 # Threat Event (Scheduled Task & File Transfer)
 **Scheduled Task Creation and Outbound File Transfer**
 
-
-
 ## Steps the "Bad Actor" took Create Logs and IoCs:
+
 ### Step 1: Create a scheduled task that launches Notepad after a short delay:
 
 ```SCHTASKS /Create /SC ONCE /TN "TestLogTask" /TR "notepad.exe" /ST 23:45‎```‎
@@ -23,8 +22,8 @@ Remove-Item "$env:TEMP\notepad_copy.exe" -Force
 ‎‎‎Remove-Item "$env:TEMP\test-download.html" -Force
 ‎```‎
 
+**Tables Used to Detect IoCs**
 
-## Tables Used to Detect IoCs:
 | **Parameter**       | **Description**                                                              |
 |---------------------|------------------------------------------------------------------------------|
 | **Name**| DeviceEvents|
@@ -44,9 +43,9 @@ Remove-Item "$env:TEMP\notepad_copy.exe" -Force
 | **Purpose**|Purpose	Used to detect outbound HTTP/HTTPS connections from user activity.
 ---
 
-## Related Queries:
-```kql
+#### Related Queries
 
+```kql
 // Detect scheduled task creation
 DeviceEvents
 | where ActionType == "ScheduledTaskCreated"
