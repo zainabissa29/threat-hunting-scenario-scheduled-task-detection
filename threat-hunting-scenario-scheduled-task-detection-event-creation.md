@@ -3,27 +3,25 @@
 
 ## Steps the "Bad Actor" took Create Logs and IoCs:
 
-### Step 1: Create a scheduled task that launches Notepad after a short delay:
+## Step 1: Create a scheduled task that launches Notepad after a short delay:
 
 ```SCHTASKS /Create /SC ONCE /TN "TestLogTask" /TR "notepad.exe" /ST 23:45‎```‎
 
-### Step 2: Copy the Notepad executable to the user’s Temp directory:
+## Step 2: Copy the Notepad executable to the user’s Temp directory:
 
 ```Copy-Item "C:\Windows\System32\notepad.exe" "$env:TEMP\notepad_copy.exe"‎```‎
 
-### Step 3: Establish an outbound HTTP connection by downloading a file from the internet:
+## Step 3: Establish an outbound HTTP connection by downloading a file from the internet:
 
 ```Invoke-WebRequest -Uri "http://example.com" -OutFile "$env:TEMP\test-download.html"‎```‎
 
-### Step 4: Clean up by deleting the scheduled task and copied files:
+## Step 4: Clean up by deleting the scheduled task and copied files:
 ```
 SCHTASKS /Delete /TN "TestLogTask" /F‎‎
 Remove-Item "$env:TEMP\notepad_copy.exe" -Force
 ‎‎‎Remove-Item "$env:TEMP\test-download.html" -Force
 ‎```‎
-
-**Tables Used to Detect IoCs**
-
+## Tables Used to Detect IoCs:
 | **Parameter**       | **Description**                                                              |
 |---------------------|------------------------------------------------------------------------------|
 | **Name**| DeviceEvents|
