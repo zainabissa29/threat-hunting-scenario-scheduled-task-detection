@@ -29,42 +29,56 @@ This scenario simulates an adversary using scheduled tasks to launch processes, 
 
 ### 1. Searched the DeviceEvents Table
 
-Searched for scheduled task creation actions to identify any new scheduled task on the endpoint.
+A review of the DeviceEvents table was performed to identify any new or potentially unauthorized tasks on the endpoint. During this analysis, it was observed that the user "zeemakay" on the device named "zee" created a scheduled task at 2025-09-24T18:34:25.095864Z. This event was successfully captured as a "ScheduledTaskCreated" record in Microsoft Defender for Endpoint, confirming both the creation of the task and the accuracy of monitoring on the endpoint
 
 **Query used to locate events:**
 ```kql
 DeviceEvents
+| where  DeviceName == "zee"
 | where ActionType == "ScheduledTaskCreated"
-| project Timestamp, DeviceName, InitiatingProcessAccountName, AdditionalFields
+| project Timestamp, DeviceName, ActionType,InitiatingProcessAccountName, InitiatingProcessAccountDomain
 | order by Timestamp desc
 
+
 ```
+<img width="1193" height="472" alt="image" src="https://github.com/user-attachments/assets/e66d838d-2977-4fd4-a838-2f0ea3f1b653" />
+
 ---
 
 
 ### 2. Searched the DeviceFileEvents Table
-Searched for evidence of file copies to the Temp directory, which could indicate attempts to mask persistence or prep for data exfiltration.
+A review of the DeviceFileEvents table was conducted to identify any suspicious file copy operations that might indicate attempts to mask persistence or facilitate data exfiltration on the endpoint. During this analysis, it was observed that the user "zeemakay" on the device named "zee" initiated the copying of the file "notepad_copy.exe" to a temporary folder at 2025-09-24T18:34:42.4063458Z. This activity was successfully captured in Microsoft Defender for Endpoint, confirming the occurrence of the file copy event and demonstrating the system’s ability to monitor file movement within user directories.
 
 **Query used to locate events:**
 ```kql
 DeviceFileEvents
-| where FolderPath contains "\\Temp\\"
+| where DeviceName == "zee"
+| where  FileName contains "notepad"
+| where FolderPath contains "Temp"
 | project Timestamp, DeviceName, FileName, FolderPath, InitiatingProcessAccountName
 | order by Timestamp desc
+
+
 ```
+<img width="1195" height="561" alt="image" src="https://github.com/user-attachments/assets/b6c1e6cf-ae45-4ac3-9c3d-511c631189c7" />
+
 ---
 
 ### 3. Searched the DeviceNetworkEvents Table
-Checked for any outbound HTTP requests to example.com (used in the simulation), which could be a sign of data exfiltration or command-and-control traffic.
+A review of the DeviceNetworkEvents table was conducted to detect any outbound network activity that could indicate file downloads or communication with external sites. During this analysis, it was observed that the user "zeemakay" on the device named "zee" successfully established an HTTP connection (port 80) to "example.com" at 2025-09-24T18:35:08.236484Z. This action was captured as a "ConnectionSuccess" event in Microsoft Defender for Endpoint, confirming both the outbound web activity and the effectiveness of the network monitoring in place.
 
 **Query used to locate events:**
 
 ```kql
 DeviceNetworkEvents
+|where DeviceName == "zee"
+|where ActionType == "ConnectionSuccess" and RemotePort == "80"
 | where RemoteUrl has "example.com"
-| project Timestamp, DeviceName, InitiatingProcessAccountName, RemoteUrl, RemotePort
+| project Timestamp, DeviceName, ActionType,InitiatingProcessAccountName, RemoteUrl, RemotePort
 | order by Timestamp desc
 ```
+<img width="1245" height="427" alt="image" src="https://github.com/user-attachments/assets/440d7884-5ea5-41f6-a1f6-dae1bc8d2438" />
+
 ---
 
 
@@ -72,25 +86,21 @@ DeviceNetworkEvents
 
 ### 1. Scheduled Task Creation
 
-Timestamp: (Time task was created)
+Timestamp: 2025-09-24T18:34:25.095864Z
 
-Event: A scheduled task named TestLogTask was created to launch Notepad.
+Event: A scheduled task named ```TestLogTask``` was created to launch Notepad.
 
 Action: ScheduledTaskCreated event detected.
-```powershell
-SCHTASKS /Create /SC ONCE /TN "TestLogTask" /TR "notepad.exe" /ST 23:45
-```
+
 
 
 ### 2. File Copy to Temp Directory
-Timestamp: (Time file was copied)
+Timestamp:2025-09-24T18:34:42.4063458Z
 
 Event: Notepad executable copied to user's Temp directory.
 
 Action: File creation event detected in Temp directory.
-```powershell
-Copy-Item "C:\Windows\System32\notepad.exe" "$env:TEMP\notepad_copy.exe"
-```
+
 
 ### 3. Outbound HTTP Download
 Timestamp: (Time download occurred)
@@ -98,21 +108,19 @@ Timestamp: (Time download occurred)
 Event: HTTP download from external site detected.
 
 Action: Outbound network event detected.
-```powershell
-Invoke-WebRequest -Uri "http://example.com" -OutFile "$env:TEMP\test-download.html"
-```
+
 
 ### 4. Cleanup Actions
 Timestamp: (Time cleanup executed)
 
 Event: Scheduled task and temporary files deleted, possibly to cover tracks.
 
-Action: ScheduledTaskDeleted and file deletion events detected.
-```powershell
-SCHTASKS /Delete /TN "TestLogTask" /F
-Remove-Item "$env:TEMP\notepad_copy.exe" -Force
-Remove-Item "$env:TEMP\test-download.html" -Force
-```
+Action: ScheduledTask Deleted and file deletion events detected.
+
+
+
+
+
 ---
 
 ### Summary
