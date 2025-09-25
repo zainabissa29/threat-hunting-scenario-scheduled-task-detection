@@ -46,22 +46,47 @@
 ```kql
 // Detect scheduled task creation
 DeviceEvents
+| where  DeviceName == "zee"
 | where ActionType == "ScheduledTaskCreated"
-| project Timestamp, DeviceName, InitiatingProcessAccountName, AdditionalFields
+| project Timestamp, DeviceName, ActionType,InitiatingProcessAccountName, InitiatingProcessAccountDomain
 | order by Timestamp desc
 
 // Detect file copy to TEMP directory
 DeviceFileEvents
-| where FolderPath contains "\\Temp\\"
+| where DeviceName == "zee"
+| where  FileName contains "notepad"
+| where FolderPath contains "Temp"
 | project Timestamp, DeviceName, FileName, FolderPath, InitiatingProcessAccountName
 | order by Timestamp desc
 
 // Detect outbound HTTP download activity
 DeviceNetworkEvents
+| where DeviceName == "zee"
+| where ActionType == "ConnectionSuccess" and RemotePort == "80"
 | where RemoteUrl has "example.com"
-| project Timestamp, DeviceName, InitiatingProcessAccountName, RemoteUrl, RemotePort
+| project Timestamp, DeviceName, ActionType,InitiatingProcessAccountName, RemoteUrl, RemotePort
 | order by Timestamp desc
+
+
+// Detect Scheduled task deletion
+DeviceEvents
+| where ActionType == "ScheduledTaskDeleted"
+| where DeviceName == "zee"
+| where InitiatingProcessAccountName == "zeemakay"
+| project Timestamp, DeviceName, ActionType, InitiatingProcessAccountName, AdditionalFields
+| order by Timestamp desc
+
+//Detect File Deletions in Temp Directory
+DeviceFileEvents
+| where DeviceName == "zee"
+| where FileName in~ ("notepad_copy.exe", "test-download.html")
+| where FolderPath contains "Temp"
+| where ActionType == "FileDeleted"
+| project Timestamp, DeviceName, FileName, FolderPath, ActionType, InitiatingProcessAccountName
+| order by Timestamp desc
+
 ```
+
 
 ---
 
