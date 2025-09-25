@@ -2,26 +2,26 @@
 **Scheduled Task Creation and Outbound File Transfer**
 
 ## Steps the "Bad Actor" took Create Logs and IoCs:
+1. Create a scheduled task that launches Notepad after a short delay:
 
-## Step 1: Create a scheduled task that launches Notepad after a short delay:
+    ```SCHTASKS /Create /SC ONCE /TN "TestLogTask" /TR "notepad.exe" /ST 23:45‎```
+ 
+2. Copy the Notepad executable to the user’s Temp directory:
 
-```SCHTASKS /Create /SC ONCE /TN "TestLogTask" /TR "notepad.exe" /ST 23:45‎```‎
+   ```Copy-Item "C:\Windows\System32\notepad.exe" "$env:TEMP\notepad_copy.exe"‎```‎
 
-## Step 2: Copy the Notepad executable to the user’s Temp directory:
+3. Establish an outbound HTTP connection by downloading a file from the internet:
 
-```Copy-Item "C:\Windows\System32\notepad.exe" "$env:TEMP\notepad_copy.exe"‎```‎
+   ```Invoke-WebRequest -Uri "http://example.com" -OutFile "$env:TEMP\test-download.html"‎```‎
 
-## Step 3: Establish an outbound HTTP connection by downloading a file from the internet:
-
-```Invoke-WebRequest -Uri "http://example.com" -OutFile "$env:TEMP\test-download.html"‎```‎
-
-## Step 4: Clean up by deleting the scheduled task and copied files:
-```
-SCHTASKS /Delete /TN "TestLogTask" /F‎‎
-Remove-Item "$env:TEMP\notepad_copy.exe" -Force
-‎‎‎Remove-Item "$env:TEMP\test-download.html" -Force
-‎```‎
-## Tables Used to Detect IoCs:
+4.  Clean up by deleting the scheduled task and copied files:
+   
+    ```
+    SCHTASKS /Delete /TN "TestLogTask" /F‎‎
+    Remove-Item "$env:TEMP\notepad_copy.exe" -Force
+    ‎‎‎Remove-Item "$env:TEMP\test-download.html" -Force
+---
+   ## Tables Used to Detect IoCs:
 | **Parameter**       | **Description**                                                              |
 |---------------------|------------------------------------------------------------------------------|
 | **Name**| DeviceEvents|
@@ -41,7 +41,7 @@ Remove-Item "$env:TEMP\notepad_copy.exe" -Force
 | **Purpose**|Purpose	Used to detect outbound HTTP/HTTPS connections from user activity.
 ---
 
-#### Related Queries
+## Related Queries
 
 ```kql
 // Detect scheduled task creation
@@ -61,7 +61,9 @@ DeviceNetworkEvents
 | where RemoteUrl has "example.com"
 | project Timestamp, DeviceName, InitiatingProcessAccountName, RemoteUrl, RemotePort
 | order by Timestamp desc
+```
 
+---
 
 ## Created By:
 - **Author Name**: Zainab Issa
@@ -77,7 +79,8 @@ DeviceNetworkEvents
 ## Additional Notes:
 - **None**
 
-
-Revision History
-Version	Changes	Date	Modified By
-1.0	Initial draft	September 24, 2025	Zainab Issa
+---
+## Revision History:
+| **Version** | **Changes**                   | **Date**         | **Modified By**   |
+|-------------|-------------------------------|------------------|-------------------|
+| 1.0         | Initial draft                  | `September  24, 2025`  | `Zainab Issa `
