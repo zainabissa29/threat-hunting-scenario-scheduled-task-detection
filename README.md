@@ -1,6 +1,6 @@
 # Threat Hunt Report: Scheduled Task & File Transfer
 
-- [Scenario Creation](https://github.com/zainabissa29/threat-hunting-scenario-tor/blob/main/threat-hunting-scenario-tor-event-creation.md)
+- [Scenario Creation](https://github.com/zainabissa29/threat-hunting-scenario-scheduled-task-detection/blob/main/threat-hunting-scenario-scheduled-task-detection-event-creation.md)
 
 ## Platforms and Languages Leveraged
 - Windows 10 Virtual Machines (Microsoft Azure)
