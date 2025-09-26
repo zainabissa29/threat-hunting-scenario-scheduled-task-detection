@@ -71,16 +71,44 @@ A review of the DeviceNetworkEvents table was conducted to detect any outbound n
 
 ```kql
 DeviceNetworkEvents
-|where DeviceName == "zee"
-|where ActionType == "ConnectionSuccess" and RemotePort == "80"
+| where DeviceName == "zee"
+| where ActionType == "ConnectionSuccess" and RemotePort == "80"
 | where RemoteUrl has "example.com"
 | project Timestamp, DeviceName, ActionType,InitiatingProcessAccountName, RemoteUrl, RemotePort
 | order by Timestamp desc
 ```
 <img width="1245" height="427" alt="image" src="https://github.com/user-attachments/assets/440d7884-5ea5-41f6-a1f6-dae1bc8d2438" />
 
----
+### 4. Searched for File and Task Deletion Events
 
+A review of the DeviceFileEvents and DeviceEvents tables was conducted to confirm that cleanup activities, including the deletion of the scheduled task and temporary files, were performed as intended. This review focused on the removal of the file "notepad_copy.exe" and "test-download.html" from the Temp directory, as well as the deletion of the scheduled task "TestLogTask." These actions are expected to generate "FileDeleted" and "ScheduledTaskDeleted" records, respectively, which further validate the completion of the simulation and the reliability of endpoint monitoring.
+
+**Query used to locate events:**
+
+```kql
+
+DeviceFileEvents
+| where DeviceName == "zee"
+| where FileName in~ ("notepad_copy.exe", "test-download.html")
+| where FolderPath contains "Temp"
+| where ActionType == "FileDeleted"
+| project Timestamp, DeviceName, FileName, FolderPath, ActionType, InitiatingProcessAccountName
+| order by Timestamp desc
+```
+<img width="1188" height="574" alt="image" src="https://github.com/user-attachments/assets/a21e1b97-b9ca-4746-97b7-e22b0c17ba0f" />
+
+
+```kql
+DeviceEvents
+| where DeviceName == "zee"
+| where ActionType == "ScheduledTaskDeleted"
+| project Timestamp, DeviceName, ActionType, InitiatingProcessAccountName, AdditionalFields
+| order by Timestamp desc
+
+```
+<img width="1168" height="523" alt="image" src="https://github.com/user-attachments/assets/d2060eae-5dc2-428c-b331-f45bd8b6f04d" />
+
+---
 
 ### Chronological Event Timeline
 
@@ -95,7 +123,7 @@ Action: ScheduledTaskCreated event detected.
 
 
 ### 2. File Copy to Temp Directory
-Timestamp:2025-09-24T18:34:42.4063458Z
+Timestamp: 2025-09-24T18:34:42.4063458Z
 
 Event: Notepad executable copied to user's Temp directory.
 
@@ -103,7 +131,7 @@ Action: File creation event detected in Temp directory.
 
 
 ### 3. Outbound HTTP Download
-Timestamp: (Time download occurred)
+Timestamp: 2025-09-24T18:35:08.236484Z
 
 Event: HTTP download from external site detected.
 
@@ -111,15 +139,11 @@ Action: Outbound network event detected.
 
 
 ### 4. Cleanup Actions
-Timestamp: (Time cleanup executed)
+Timestamp: 2025-09-24T18:35:17.845266Z
 
 Event: Scheduled task and temporary files deleted, possibly to cover tracks.
 
-Action: ScheduledTask Deleted and file deletion events detected.
-
-
-
-
+Action: ScheduledTaskDeleted and file deletion events detected.
 
 ---
 
